@@ -86,14 +86,18 @@ export function spanToTraceHeader(span: Span): string {
 /**
  *  Converts the span links array to a flattened version to be sent within an envelope
  */
-export function convertSpanLinksForEnvelope(links: SpanLink[]): SpanLinkJSON[] {
-  return links.map(({ context: { spanId, traceId, traceFlags, ...restContext }, attributes }) => ({
-    span_id: spanId,
-    trace_id: traceId,
-    sampled: traceFlags === TRACE_FLAG_SAMPLED,
-    attributes,
-    ...restContext,
-  }));
+export function convertSpanLinksForEnvelope(links?: SpanLink[]): SpanLinkJSON[] | undefined {
+  if (links && links.length > 0) {
+    return links.map(({ context: { spanId, traceId, traceFlags, ...restContext }, attributes }) => ({
+      span_id: spanId,
+      trace_id: traceId,
+      sampled: traceFlags === TRACE_FLAG_SAMPLED,
+      attributes,
+      ...restContext,
+    }));
+  } else {
+    return undefined;
+  }
 }
 
 /**
@@ -153,7 +157,7 @@ export function spanToJSON(span: Span): SpanJSON {
       status: getStatusMessage(status),
       op: attributes[SEMANTIC_ATTRIBUTE_SENTRY_OP],
       origin: attributes[SEMANTIC_ATTRIBUTE_SENTRY_ORIGIN] as SpanOrigin | undefined,
-      links: links ? convertSpanLinksForEnvelope(links) : undefined,
+      links: convertSpanLinksForEnvelope(links),
     });
   }
 
